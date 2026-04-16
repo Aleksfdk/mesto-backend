@@ -1,12 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import Card from '../models/card';
 
-interface CustomRequest extends Request {
-    user?: {
-        _id: string;
-    };
-}
-
 interface IError extends Error {
     statusCode?: number;
 }
@@ -24,7 +18,7 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
   const card = new Card(req.body);
   card.save()
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(201).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
         const error = new Error('Передан некорректный ID карточки') as IError;
@@ -45,7 +39,7 @@ export const createCard = (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
-export const deleteCard = (req: CustomRequest, res: Response, next: NextFunction) => {
+export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
   const userId = req.user?._id;
   const cardId = req.params.id;
 
@@ -90,7 +84,7 @@ export const deleteCard = (req: CustomRequest, res: Response, next: NextFunction
     });
 };
 
-export const likeCard = (req: CustomRequest, res: Response) => {
+export const likeCard = (req: Request, res: Response) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
   return Card.findByIdAndUpdate(
@@ -119,7 +113,7 @@ export const likeCard = (req: CustomRequest, res: Response) => {
     });
 };
 
-export const deleteLikeCard = (req: CustomRequest, res: Response) => {
+export const deleteLikeCard = (req: Request, res: Response) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
   return Card.findByIdAndUpdate(

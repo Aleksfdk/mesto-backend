@@ -13,16 +13,6 @@ interface IError extends Error {
 const { PORT = 3000 } = process.env;
 const app = express();
 
-declare global {
-    namespace Express {
-        interface Request {
-            user?: {
-                _id: string;
-            };
-        }
-    }
-}
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

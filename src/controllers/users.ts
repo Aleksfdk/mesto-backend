@@ -35,7 +35,7 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
       req.body.password = hash;
       const user = new User(req.body);
       user.save()
-        .then((user) => res.send({ data: user }));
+        .then((user) => res.status(201).send({ data: user }));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
