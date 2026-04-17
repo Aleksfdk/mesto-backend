@@ -1,8 +1,6 @@
 import { model, Schema } from 'mongoose';
 import validator from 'validator';
 
-const urlRegex = /^https?:\/\/(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}([a-zA-Z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+)?#?$/;
-
 const userSchema = new Schema({
   name: {
     type: String,
@@ -20,13 +18,14 @@ const userSchema = new Schema({
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
-      validator: (value: string) => urlRegex.test(value),
+      validator: (value: string) => validator.isURL(value),
       message: 'Некорректный формат ссылки на аватар',
     },
   },
   email: {
     type: String,
     required: true,
+    unique: true,
     validate: {
       validator: (value: string) => validator.isEmail(value),
       message: 'Некорректный формат почты',

@@ -7,7 +7,7 @@ interface IError extends Error {
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
   .populate('owner')
-  .then((cards) => res.send({ data: cards }))
+  .then((cards) => { res.send({ data: cards }); })
   .catch((err) => {
     const error = new Error(err.message) as IError;
     error.statusCode = 500;
@@ -16,26 +16,29 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
   });
 
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
-  const card = new Card(req.body);
+  const userId = req.user?._id;
+  const card = new Card(userId);
   card.save()
-    .then((card) => res.status(201).send({ data: card }))
+    .then((newCard) => res.status(201).send({ data: newCard }))
     .catch((err) => {
       if (err.name === 'CastError') {
         const error = new Error('Передан некорректный ID карточки') as IError;
         error.statusCode = 400;
 
-        return next(error);
+        next(error);
+        return;
       }
       if (err.name === 'ValidationError') {
         const error = new Error('Переданы некорректные данные') as IError;
         error.statusCode = 400;
 
-        return next(error);
+        next(error);
+        return;
       }
       const error = new Error(err.message) as IError;
       error.statusCode = 500;
 
-      return next(error);
+      next(error);
     });
 };
 
@@ -49,14 +52,16 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
         const error = new Error('Карточка не найдена') as IError;
         error.statusCode = 404;
 
-        return next(error);
+        next(error);
+        return;
       }
 
       if (card.owner.toString() !== userId) {
         const error = new Error('Нет прав для удаления чужой карточки') as IError;
         error.statusCode = 403;
 
-        return next(error);
+        next(error);
+        return;
       }
 
       card.deleteOne()
@@ -69,22 +74,24 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
         const error = new Error('Передан некорректный ID карточки') as IError;
         error.statusCode = 400;
 
-        return next(error);
+        next(error);
+        return;
       }
       if (err.name === 'ValidationError') {
         const error = new Error('Переданы некорректные данные') as IError;
         error.statusCode = 400;
 
-        return next(error);
+        next(error);
+        return;
       }
       const error = new Error(err.message) as IError;
       error.statusCode = 500;
 
-      return next(error);
+      next(error);
     });
 };
 
-export const likeCard = (req: Request, res: Response) => {
+export const likeCard = (req: Request, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
   return Card.findByIdAndUpdate(
@@ -94,26 +101,32 @@ export const likeCard = (req: Request, res: Response) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(404).send({ message: 'Карточка не найдена' });
+        return;
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({
+        res.status(400).send({
           message: 'Передан некорректный ID карточки',
         });
+        return;
       }
       if (err.name === 'ValidationError') {
-        return res.status(400).send({
+        res.status(400).send({
           message: 'Переданы некорректные данные',
         });
+        return;
       }
-      res.status(500).send({ message: err.message });
+      const error = new Error(err.message) as IError;
+      error.statusCode = 500;
+
+      next(error);
     });
 };
 
-export const deleteLikeCard = (req: Request, res: Response) => {
+export const deleteLikeCard = (req: Request, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
   return Card.findByIdAndUpdate(
@@ -123,21 +136,27 @@ export const deleteLikeCard = (req: Request, res: Response) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(404).send({ message: 'Карточка не найдена' });
+        return;
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({
+        res.status(400).send({
           message: 'Передан некорректный ID карточки',
         });
+        return;
       }
       if (err.name === 'ValidationError') {
-        return res.status(400).send({
+        res.status(400).send({
           message: 'Переданы некорректные данные',
         });
+        return;
       }
-      res.status(500).send({ message: err.message });
+      const error = new Error(err.message) as IError;
+      error.statusCode = 500;
+
+      next(error);
     });
 };

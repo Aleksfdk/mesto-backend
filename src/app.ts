@@ -1,9 +1,6 @@
-import express, { Request, Response, NextFunction}  from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import usersRouter from "./routers/users";
-import cardsRouter from "./routers/cards";
-import authMiddleware from "./middlewares/auth";
-import {createUser, login} from "./controllers/users";
+import routers from "routers";
 import { requestLogger, errorLogger } from './middlewares/logger';
 
 interface IError extends Error {
@@ -16,26 +13,34 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://localhost:27017/mestodb')
-    .then(() => console.log('✅ MongoDB connected'))
-    .catch(err => console.error('❌ MongoDB error:', err));
-
 app.use(requestLogger);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.use(routers);
 
-app.use(authMiddleware);
-app.use(usersRouter);
-app.use(cardsRouter);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const error = new Error('Запрашиваемый ресурс не найден') as IError;
+  error.statusCode = 404;
+  next(error);
 
 app.use(errorLogger);
 
 app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
-    const {statusCode = 500, message} = err;
-    res.status(statusCode).send({ message: message });
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({ message });
 });
 
-app.listen(+PORT, () => {
-    console.log(`App listening on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/mestodb');
+    console.log('✅ MongoDB connected');
+
+    app.listen(+PORT, () => {
+      console.log(`🚀 App listening on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Ошибка при запуске сервера:', err);
+    process.exit(1);
+  }
+};
+
+startServer();

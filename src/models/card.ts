@@ -1,6 +1,5 @@
 import { model, Schema } from 'mongoose';
-
-const urlRegex = /^https?:\/\/(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}([a-zA-Z0-9\-._~:\/?#\[\]@!$&'()*+,;=]+)?#?$/;
+import validator from 'validator';
 
 const cardSchema = new Schema({
   name: {
@@ -13,7 +12,7 @@ const cardSchema = new Schema({
     type: String,
     required: true,
     validate: {
-      validator: (value: string) => urlRegex.test(value),
+      validator: (value: string) => validator.isURL(value),
       message: 'Некорректный формат ссылки',
     },
   },
@@ -22,11 +21,15 @@ const cardSchema = new Schema({
     ref: 'user',
     required: true,
   },
-  likes: {
-    type: String,
-  },
+  likes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
+    },
+  ],
   createdAt: {
     type: String,
+    default: new Date().toISOString(),
   },
 });
 
