@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import routers from "routers";
+import { errors } from 'celebrate';
+import routers from './routers';
 import { requestLogger, errorLogger } from './middlewares/logger';
 
 interface IError extends Error {
@@ -21,8 +22,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const error = new Error('Запрашиваемый ресурс не найден') as IError;
   error.statusCode = 404;
   next(error);
+});
 
 app.use(errorLogger);
+
+app.use(errors());
 
 app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
   const { statusCode = 500, message } = err;

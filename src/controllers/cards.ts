@@ -12,7 +12,7 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
     const error = new Error(err.message) as IError;
     error.statusCode = 500;
 
-    return next(error);
+    next(error);
   });
 
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
@@ -101,22 +101,24 @@ export const likeCard = (req: Request, res: Response, next: NextFunction) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        const error = new Error('Карточка не найдена') as IError;
+        error.statusCode = 404;
+        next(error);
         return;
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({
-          message: 'Передан некорректный ID карточки',
-        });
+        const error = new Error('Передан некорректный ID карточки') as IError;
+        error.statusCode = 400;
+        next(error);
         return;
       }
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные',
-        });
+        const error = new Error('Переданы некорректные данные') as IError;
+        error.statusCode = 400;
+        next(error);
         return;
       }
       const error = new Error(err.message) as IError;
@@ -136,22 +138,24 @@ export const deleteLikeCard = (req: Request, res: Response, next: NextFunction) 
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        const error = new Error('Карточка не найдена') as IError;
+        error.statusCode = 404;
+        next(error);
         return;
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({
-          message: 'Передан некорректный ID карточки',
-        });
+        const error = new Error('Передан некорректный ID карточки') as IError;
+        error.statusCode = 400;
+        next(error);
         return;
       }
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные',
-        });
+        const error = new Error('Переданы некорректные данные') as IError;
+        error.statusCode = 400;
+        next(error);
         return;
       }
       const error = new Error(err.message) as IError;

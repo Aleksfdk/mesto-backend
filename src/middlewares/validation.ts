@@ -55,7 +55,7 @@ export const validateUpdateAvatar = celebrate({
 
 export const validateUserId = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().length(24).hex().required(),
+    id: Joi.string().length(24).hex().required(),
   }),
 });
 
