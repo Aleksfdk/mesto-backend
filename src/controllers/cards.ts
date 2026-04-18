@@ -16,9 +16,9 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
   });
 
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
-  const userId = req.user?._id;
-  const card = new Card(userId);
-  card.save()
+  const userId = req.user._id;
+  const { name, link } = req.body;
+  return new Card({ owner: userId, name, link }).save()
     .then((newCard) => res.status(201).send({ data: newCard }))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -43,10 +43,10 @@ export const createCard = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
-  const userId = req.user?._id;
-  const cardId = req.params.id;
+  const userId = req.user._id;
+  const cardIdVar = req.params.cardId;
 
-  Card.findById(cardId)
+  Card.findById(cardIdVar)
     .then((card) => {
       if (!card) {
         const error = new Error('Карточка не найдена') as IError;
@@ -93,7 +93,7 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
 
 export const likeCard = (req: Request, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
-  const userId = req.user?._id;
+  const userId = req.user._id;
   return Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: userId } },
@@ -130,7 +130,7 @@ export const likeCard = (req: Request, res: Response, next: NextFunction) => {
 
 export const deleteLikeCard = (req: Request, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
-  const userId = req.user?._id;
+  const userId = req.user._id;
   return Card.findByIdAndUpdate(
     cardId,
     { $pull: { likes: userId } },

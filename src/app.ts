@@ -35,7 +35,7 @@ app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
 
 const startServer = async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/mestodb');
+    await mongoose.connect('mongodb://localhost:27017/mestodb2');
     console.log('✅ MongoDB connected');
 
     app.listen(+PORT, () => {

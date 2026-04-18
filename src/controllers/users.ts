@@ -69,7 +69,12 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
       const user = new User(req.body);
       return user.save();
     })
-    .then((user) => res.status(201).send({ data: user }))
+    .then((user) => {
+      const obj = user.toObject();
+      delete (obj as any).password;
+
+      res.status(201).send({ data: obj });
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         const error = new Error('Передан некорректный ID пользователя') as IError;
@@ -101,7 +106,7 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const changeProfile = (req: Request, res: Response, next: NextFunction) => {
-  const userId = req.user?._id;
+  const userId = req.user._id;
 
   const { name, about } = req.body;
   return User.findByIdAndUpdate(
@@ -114,7 +119,10 @@ export const changeProfile = (req: Request, res: Response, next: NextFunction) =
   )
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        const error = new Error('Пользователь не найден') as IError;
+        error.statusCode = 404;
+
+        next(error);
         return;
       }
       res.send({ data: user });
@@ -142,7 +150,7 @@ export const changeProfile = (req: Request, res: Response, next: NextFunction) =
 };
 
 export const changeProfileAvatar = (req: Request, res: Response, next: NextFunction) => {
-  const userId = req.user?._id;
+  const userId = req.user._id;
   const { avatar } = req.body;
   return User.findByIdAndUpdate(
     userId,
@@ -154,7 +162,10 @@ export const changeProfileAvatar = (req: Request, res: Response, next: NextFunct
   )
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        const error = new Error('Пользователь не найден') as IError;
+        error.statusCode = 404;
+
+        next(error);
         return;
       }
       res.send({ data: user });
@@ -202,9 +213,15 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
         });
     })
     .catch((err) => {
-      const error = new Error(err.message) as IError;
-      error.statusCode = 401;
+      if (err.message === 'Неправильный логин или пароль') {
+        const error = new Error(err.message) as IError;
+        error.statusCode = 401;
+        next(error);
+        return;
+      }
 
+      const error = new Error(err.message) as IError;
+      error.statusCode = 500;
       next(error);
     });
 };

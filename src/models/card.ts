@@ -29,7 +29,7 @@ const cardSchema = new Schema({
   ],
   createdAt: {
     type: String,
-    default: new Date().toISOString(),
+    default: () => new Date().toISOString(),
   },
 });
 
